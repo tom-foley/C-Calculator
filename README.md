@@ -6,7 +6,7 @@ An expression evaluator written in C without dependencies.
 The evaluation function which this library exposes to the client is called `eval()`, which takes a string containing the expression as the sole parameter. 
 In order to use the `eval()` function, first download and build/link the source by running `make` in the root directory. 
 Then, we can use `eval()` like so:
-```
+```c_cpp
 #include "../path/to/evaluator.h"
 
 ...
