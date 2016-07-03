@@ -2,17 +2,17 @@
 #define _EVALUATOR_H
 #endif
 
-#define NUL	                0x00
-#define WHITESPACE	        0x20
-#define OPEN_BRACE	        0x28
-#define CLOSE_BRACE	        0x29
-#define EXPONENT	        0x5E
+#define NUL                 0x00
+#define WHITESPACE          0x20
+#define OPEN_BRACE          0x28
+#define CLOSE_BRACE         0x29
+#define EXPONENT            0x5E
 #define MULTIPLIER          0x2A
-#define DIVIDER	            0x2F
+#define DIVIDER             0x2F
 #define ADDER               0x2B
 #define SUBTRACTER          0x2D
 
-#define IS_NULL(x)	        (x == NUL)
+#define IS_NULL(x)          (x == NUL)
 #define IS_WHITESPACE(x)    (x == WHITESPACE)
 #define IS_OPEN_BRACE(x)    (x == OPEN_BRACE)
 #define IS_CLOSE_BRACE(x)   (x == CLOSE_BRACE)
