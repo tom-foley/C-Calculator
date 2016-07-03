@@ -8,4 +8,4 @@ OBJ = src/evaluator.o test/test_evaluator.o
 
 bin/test_evaluator: $(OBJ)
 	mkdir -p bin
-	gcc $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^
