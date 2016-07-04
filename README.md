@@ -1,6 +1,6 @@
 ## Expression Evaluator
 
-An expression evaluator written in C without dependencies. 
+A Mathematical expression evaluator (constants only, no variables) written in C without dependencies
 
 ### Usage:
 The evaluation function which this library exposes to the client is called `eval()`, which takes a string containing the expression as the sole parameter. 
