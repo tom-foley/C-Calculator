@@ -1,15 +1,34 @@
 #include <stdio.h>
 #include "evaluator.h"
 
+char is_number(char c) {
+    char x = 0x30;
+    while (x <= 0x39) {
+        if (c == x) {
+            return 1;
+        }
+        x += 0x01;
+    }
+
+    return 0;
+}
+
+
+char is_op(char c) {
+    return c == ADDER || c == SUBTRACTER
+        || c == MULTIPLIER || c == DIVIDER
+        || c == EXPONENT;
+}
+
 
 enum TOKEN_TYPES get_token_type(char token) {
-    if (IS_OPEN_BRACE(token)) {
+    if (token == OPEN_BRACE) {
         return START_EXP;
-    } else if (IS_CLOSE_BRACE(token)) {
+    } else if (token == CLOSE_BRACE) {
         return END_EXP;
-    } else if (IS_OP(token)) {
+    } else if (is_op(token)) {
         return OP;
-    } else if (IS_NUMBER(token)) {
+    } else if (is_number(token)) {
         return NUMBER;
     } else {
         return INVALID;
@@ -51,7 +70,7 @@ long power(long num, long exp) {
 
 
 void set_token_index(char* expression, long *counter) {
-    while (IS_WHITESPACE(expression[*counter])) {
+    while (expression[*counter] == WHITESPACE) {
         *counter += 1;
     }
 }
@@ -66,7 +85,7 @@ long get_next_number(char* expression, long *counter) {
         *counter += 1;
         set_token_index(expression, counter);
         num_token = expression[*counter];
-    } while (IS_NUMBER(num_token));
+    } while (is_number(num_token));
 
     return number;
 }
@@ -108,7 +127,7 @@ long parse(char* expression, long sum, long *counter) {
     enum TOKEN_TYPES token_type = NUL;
     enum OP_TYPES op_type = NUL;
 
-    while (!IS_NULL(expression[*counter])) {
+    while (expression[*counter] != NUL) {
         set_token_index(expression, counter);
         token = expression[*counter];
         token_type = get_token_type(token);

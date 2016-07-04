@@ -12,23 +12,6 @@
 #define ADDER               0x2B
 #define SUBTRACTER          0x2D
 
-#define IS_NULL(x)          (x == NUL)
-#define IS_WHITESPACE(x)    (x == WHITESPACE)
-#define IS_OPEN_BRACE(x)    (x == OPEN_BRACE)
-#define IS_CLOSE_BRACE(x)   (x == CLOSE_BRACE)
-
-#define IS_NUMBER(x)\
-    (x == 0x30) ^ (x == 0x31) ^\
-    (x == 0x32) ^ (x == 0x33) ^\
-    (x == 0x34) ^ (x == 0x35) ^\
-    (x == 0x36) ^ (x == 0x37) ^\
-    (x == 0x38) ^ (x == 0x39)
-
-#define IS_OP(x)\
-    (x == ADDER) ^ (x == SUBTRACTER) ^\
-    (x == MULTIPLIER) ^ (x == DIVIDER) ^\
-    (x == EXPONENT)
-
 enum TOKEN_TYPES {
     START_EXP = 0,
     END_EXP = 1,
