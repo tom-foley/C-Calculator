@@ -69,14 +69,14 @@ long power(long num, long exp) {
 }
 
 
-void set_token_index(char* expression, long *counter) {
+void set_token_index(char* expression, long* counter) {
     while (expression[*counter] == WHITESPACE) {
         *counter += 1;
     }
 }
 
 
-long get_next_number(char* expression, long *counter) {
+long get_next_number(char* expression, long* counter) {
     long number = 0;
     char num_token = expression[*counter];
     do {
@@ -120,16 +120,24 @@ long perform_op(long left_exp, long right_exp, char op) {
 }
 
 
-long parse(char* expression, long sum, long *counter) {
-    char token = NUL, next_token = NUL, op = NUL;
+long parse(char* expression, long sum, long* counter) {
+    char token = NUL, 
+         next_token = NUL, 
+         op = NUL,
+         negative_flag = 0,
+         consecutive_ops = 0x30;
     
-    long number, counter_next;
-    enum TOKEN_TYPES token_type = NUL;
+    long number, 
+         counter_next;
+
     enum OP_TYPES op_type = NUL;
+    enum TOKEN_TYPES token_type = NUL, 
+                     last_token_type = NUL;
 
     while (expression[*counter] != NUL) {
         set_token_index(expression, counter);
         token = expression[*counter];
+        last_token_type = token_type;
         token_type = get_token_type(token);
 
         switch (token_type) {
@@ -158,13 +166,36 @@ long parse(char* expression, long sum, long *counter) {
             case (END_EXP):
                 return sum;
             case (OP):
-                op = token;
-                op_type = get_op_type(op);
-                *counter += 1;
+                op_type = get_op_type(token);
+
+                if (last_token_type == OP) {
+                    consecutive_ops += 1;
+                    if (consecutive_ops > 0x32) {
+                        //  TODO:   return error up recursion statck
+                        printf("Too many consecutive OPS...Exiting.\n");
+                    }
+                    if (token == ADDER) {
+                        negative_flag = 0x30;
+                    } else if (token == SUBTRACTER) {
+                        negative_flag = 0x31;
+                    } else {
+                        //  TODO:   return error up recursion statck
+                        printf("Illegal order of operations...Exiting.\n");
+                    }
+                } else {
+                    consecutive_ops = 0x31;
+                    op = token;
+                }
+                
+                *counter += 1;      
+             
                 break;
             case (NUMBER):
                 //  Process current number
                 number = get_next_number(expression, counter);
+                if (negative_flag == 0x31) {
+                    number *= -1;
+                }
                 
                 //  Process next token
                 counter_next = *counter;

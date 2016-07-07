@@ -86,13 +86,29 @@ int main () {
     char* exp14 = "3 * (2 * (1 + 1) ^ 2) + 2";
     check(exp14, 26);
 
+    //  54
+    char* exp15 = "2 * (2 + 1) ^ 3";
+    check(exp15, 54);
+
     //  109
     char* exp16 = "(1 + 3 * (2 * (1 + 1) ^ 2) + 2) * 2 * 2 + 1";
     check(exp16, 109);
 
-    //  54
-    char* exp15 = "2 * (2 + 1) ^ 3";
-    check(exp15, 54);
+    //  3
+    char* exp17 = "1 - - 2";
+    check(exp17, 3);
+
+    //  -2
+    char* exp18 = "1 * - 2";
+    check(exp18, -2);
+
+    //  -1
+    char* exp19 = "2 / - 2";
+    check(exp19, -1);
+
+    //  -1
+    char* exp20 = "2 / (- 2)";
+    check(exp20, -1);         
 
     printf("Tests Passed: %d / %d\n", sucess_count, test_count);
 }
