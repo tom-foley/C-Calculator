@@ -108,7 +108,11 @@ int main () {
 
     //  -1
     char* exp20 = "2 / (- 2)";
-    check(exp20, -1);         
+    check(exp20, -1);
+
+    //  -1
+    char* exp21 = "2 / (- 2";
+    check(exp21, -1);    
 
     printf("Tests Passed: %d / %d\n", sucess_count, test_count);
 }

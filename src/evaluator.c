@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "evaluator.h"
 
-char is_number(char c) {
+int is_number(char c) {
     char x = 0x30;
     while (x <= 0x39) {
         if (c == x) {
@@ -14,7 +14,7 @@ char is_number(char c) {
 }
 
 
-char is_op(char c) {
+int is_op(char c) {
     return c == ADDER || c == SUBTRACTER
         || c == MULTIPLIER || c == DIVIDER
         || c == EXPONENT;
@@ -56,7 +56,7 @@ enum OP_TYPES get_op_type(char op) {
 }
 
 
-char order_operations_greater(enum OP_TYPES cur_op, enum OP_TYPES next_op) {
+int order_operations_greater(enum OP_TYPES cur_op, enum OP_TYPES next_op) {
     return next_op > cur_op;
 }
 
@@ -93,7 +93,11 @@ long get_next_number(char* expression, long* counter) {
 
 long perform_op(long left_exp, long right_exp, char op) {
     long op_result;
-    printf("Performing Op:\t\%ld %c %ld = ", left_exp, op == NUL ? '+' : op, right_exp);
+
+    if (op != NUL) {
+        printf("Performing Op:\t\%ld %c %ld = ", left_exp, op, right_exp);
+    }
+
     switch (op) {
         case ADDER:
             op_result = left_exp + right_exp;
@@ -115,17 +119,25 @@ long perform_op(long left_exp, long right_exp, char op) {
             break;
     }
 
-    printf("%ld\n", op_result);
+    if (op != NUL) {
+        printf("%ld\n", op_result);
+    }
+
     return op_result;
 }
 
 
 long parse(char* expression, long sum, long* counter) {
-    char token = NUL, 
-         next_token = NUL, 
-         op = NUL,
-         negative_flag = 0,
-         consecutive_ops = 0x30;
+    char op = NUL, 
+         token = NUL, 
+         next_token = NUL; 
+    
+    int negative_flag = 0,
+        consecutive_ops = 0;
+
+    int paren_flag = (*counter > 1) 
+        ? expression[*counter - 1] == OPEN_BRACE 
+        : 0;
     
     long number, 
          counter_next;
@@ -148,6 +160,7 @@ long parse(char* expression, long sum, long* counter) {
                 //  Get result of () expression
                 number = parse(expression, 0, counter);
 
+                paren_flag = 0;
                 //  Process next token
                 *counter += 1;
                 counter_next = *counter;
@@ -170,30 +183,29 @@ long parse(char* expression, long sum, long* counter) {
 
                 if (last_token_type == OP) {
                     consecutive_ops += 1;
-                    if (consecutive_ops > 0x32) {
-                        //  TODO:   return error up recursion statck
+                    if (consecutive_ops > 2) {
+                        //  TODO: return error up recursion stack
                         printf("Too many consecutive OPS...Exiting.\n");
                     }
                     if (token == ADDER) {
-                        negative_flag = 0x30;
+                        negative_flag = NUL;
                     } else if (token == SUBTRACTER) {
-                        negative_flag = 0x31;
+                        negative_flag = 1;
                     } else {
-                        //  TODO:   return error up recursion statck
+                        //  TODO: return error up recursion stack
                         printf("Illegal order of operations...Exiting.\n");
                     }
                 } else {
-                    consecutive_ops = 0x31;
+                    consecutive_ops = 1;
                     op = token;
                 }
                 
-                *counter += 1;      
-             
+                *counter += 1;
                 break;
             case (NUMBER):
                 //  Process current number
                 number = get_next_number(expression, counter);
-                if (negative_flag == 0x31) {
+                if (negative_flag) {
                     number *= -1;
                 }
                 
@@ -210,11 +222,16 @@ long parse(char* expression, long sum, long* counter) {
                 }
 
                 sum = perform_op(sum, number, op);
-
                 break;
             default:
+                *counter += 1;
                 break;
         }
+    }
+
+    if (paren_flag) {
+        //  TODO: return error up recursion stack
+        printf("Missing closing parentheses...Exiting.\n");
     }
 
     return sum;
