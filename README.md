@@ -28,7 +28,5 @@ long result4 = eval(expression4);     //  result will yield 0 due to illegal Ord
 More examples can be found in the `test/test_evaluator.c` file.
 
 ### TODO:
-* Add better support for negative operations (i.e. '1 - - 2' should be 3)
 * Check for integer overflows
-* Check for invalid expressions (missing parentheses/brackets, invalid operations, etc.)
 * Add support for evaluating decimals/floats/doubles
