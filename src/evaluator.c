@@ -76,58 +76,64 @@ void set_token_index(char* expression, long* counter) {
 }
 
 
-long get_next_number(char* expression, long* counter) {
-    long number = 0;
+void get_next_number(char* expression, long* counter, long* number) {
+    *number = 0;
     char num_token = expression[*counter];
     do {
-        number *= 10;
-        number += (num_token - '0');
+        *number *= 10;
+        *number += (num_token - '0');
         *counter += 1;
         set_token_index(expression, counter);
         num_token = expression[*counter];
     } while (is_number(num_token));
-
-    return number;
 }
 
 
-long perform_op(long left_exp, long right_exp, char op) {
-    long op_result;
-
+void perform_op(long* left_exp, long right_exp, char op) {
     if (op != NUL) {
-        printf("Performing Op:\t\%ld %c %ld = ", left_exp, op, right_exp);
+        printf("Performing Op:\t\%ld %c %ld = ", *left_exp, op, right_exp);
     }
 
     switch (op) {
         case ADDER:
-            op_result = left_exp + right_exp;
+            *left_exp += right_exp;
             break;
         case SUBTRACTER:
-            op_result = left_exp - right_exp;
+            *left_exp -= right_exp;
             break; 
         case MULTIPLIER:
-            op_result = left_exp * right_exp; 
+            *left_exp *= right_exp; 
             break; 
         case DIVIDER:
-            op_result = left_exp / right_exp;
+            *left_exp /= right_exp;
             break; 
         case EXPONENT:
-            op_result = power(left_exp, right_exp);
+            *left_exp = power(*left_exp, right_exp);
             break; 
         default:
-            op_result = right_exp;
+            *left_exp = right_exp;
             break;
     }
 
     if (op != NUL) {
-        printf("%ld\n", op_result);
+        printf("%ld\n", *left_exp);
     }
-
-    return op_result;
 }
 
 
-long parse(char* expression, long sum, long* counter) {
+void set_error(eval_result* result, char* msg) {
+    int i = 0;
+    while (msg[i] != NUL) {
+        result->error_msg[i] = msg[i];
+        i++;
+    }
+
+    result->error_msg[i] = NUL;
+    result->error = 1;
+}
+
+
+eval_result parse(char* expression, eval_result result, long* counter) {
     char op = NUL, 
          token = NUL, 
          next_token = NUL; 
@@ -135,12 +141,22 @@ long parse(char* expression, long sum, long* counter) {
     int negative_flag = 0,
         consecutive_ops = 0;
 
-    int paren_flag = (*counter > 1) 
-        ? expression[*counter - 1] == OPEN_BRACE 
-        : 0;
-    
-    long number, 
-         counter_next;
+    //  set paren_flag to 1 
+    //  if (expression[0] is OPEN_BRACE) OR
+    //  we are in recursive call and 
+    //  (expression[counter - 1] is OPEN_BRACE)  
+    int paren_flag = 0;
+    if (!*counter) {
+        paren_flag = expression[*counter] == OPEN_BRACE;
+    } else if (*counter > 1) {
+        paren_flag = expression[*counter - 1] == OPEN_BRACE; 
+    }
+
+    long counter_next;
+
+    eval_result next_result;
+    next_result.error = 0;
+    next_result.result = 0;
 
     enum OP_TYPES op_type = NUL;
     enum TOKEN_TYPES token_type = NUL, 
@@ -158,9 +174,12 @@ long parse(char* expression, long sum, long* counter) {
                 *counter += 1;
 
                 //  Get result of () expression
-                number = parse(expression, 0, counter);
+                next_result.result = 0;
+                next_result = parse(expression, next_result, counter);
+                if (next_result.error) {
+                    return next_result;
+                }
 
-                paren_flag = 0;
                 //  Process next token
                 *counter += 1;
                 counter_next = *counter;
@@ -171,29 +190,33 @@ long parse(char* expression, long sum, long* counter) {
                 //      (next_token is an OP) AND
                 //      (next_token has higher order operations than current op) 
                 if (order_operations_greater(op_type, get_op_type(next_token))) {
-                    number = parse(expression, number, counter);
+                    next_result = parse(expression, next_result, counter);
+                    if (next_result.error) {
+                        return next_result;
+                    }
                 }
 
-                sum = perform_op(sum, number, op);
+                perform_op(&result.result, next_result.result, op);
                 break;
             case (END_EXP):
-                return sum;
+                return result;
             case (OP):
                 op_type = get_op_type(token);
 
                 if (last_token_type == OP) {
                     consecutive_ops += 1;
                     if (consecutive_ops > 2) {
-                        //  TODO: return error up recursion stack
-                        printf("Too many consecutive OPS...Exiting.\n");
+                        set_error(&result, "Too many consecutive OPS");
+                        return result;
                     }
+
                     if (token == ADDER) {
                         negative_flag = NUL;
                     } else if (token == SUBTRACTER) {
                         negative_flag = 1;
-                    } else {
-                        //  TODO: return error up recursion stack
-                        printf("Illegal order of operations...Exiting.\n");
+                    } else if (token != OPEN_BRACE) {
+                        set_error(&result, "Illegal order of operations");
+                        return result;                 
                     }
                 } else {
                     consecutive_ops = 1;
@@ -204,9 +227,9 @@ long parse(char* expression, long sum, long* counter) {
                 break;
             case (NUMBER):
                 //  Process current number
-                number = get_next_number(expression, counter);
+                get_next_number(expression, counter, &next_result.result);
                 if (negative_flag) {
-                    number *= -1;
+                    next_result.result *= -1;
                 }
                 
                 //  Process next token
@@ -218,27 +241,43 @@ long parse(char* expression, long sum, long* counter) {
                 //      (next_token is an OP) AND
                 //      (next_token has higher order operations than current op) 
                 if (order_operations_greater(op_type, get_op_type(next_token))) {
-                    number = parse(expression, number, counter);
+                    next_result = parse(expression, next_result, counter);
+                    if (next_result.error) {
+                        return next_result;
+                    }
                 }
 
-                sum = perform_op(sum, number, op);
+                perform_op(&result.result, next_result.result, op);
                 break;
             default:
-                *counter += 1;
-                break;
+                if (paren_flag) {
+                    set_error(&result, "Missing closing parentheses");
+                }
+                return result;
         }
     }
 
     if (paren_flag) {
-        //  TODO: return error up recursion stack
-        printf("Missing closing parentheses...Exiting.\n");
-    }
+        set_error(&result, "Missing closing parentheses");
+    }    
 
-    return sum;
+    return result;
 }
 
 
 long eval(char* expression) {
     long counter = 0;
-    return parse(expression, 0, &counter);
+
+    eval_result result;
+    result.error = 0;
+    result.result = 0;
+    
+    result = parse(expression, result, &counter);
+
+    if (result.error) {
+        printf("%s...Exiting\n", result.error_msg);
+        return 0;
+    } else {
+        return result.result;
+    }
 }

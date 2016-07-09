@@ -110,9 +110,20 @@ int main () {
     char* exp20 = "2 / (- 2)";
     check(exp20, -1);
 
-    //  -1
+    //  0 --> Error due to 
+    //  missing closing parentheses
     char* exp21 = "2 / (- 2";
-    check(exp21, -1);    
+    check(exp21, 0);
+
+    //  0 --> Error due to 
+    //  illegal order of operations
+    char* exp22 = "2 */ 2";
+    check(exp22, 0);
+
+    //  0 --> Error due to 
+    //  missing closing parentheses
+    char* exp23 = "(1 + 3 * (2 * (1 + 1 ^ 2) + 2) * 2 * 2 + 1";
+    check(exp23, 0);
 
     printf("Tests Passed: %d / %d\n", sucess_count, test_count);
 }

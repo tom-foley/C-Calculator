@@ -30,4 +30,10 @@ enum OP_TYPES {
     NEW_EXPRESSION = 4,
 };
 
+typedef struct eval_result {
+    char error_msg[30];
+    int error;
+    long result;
+} eval_result;
+
 long eval(char* expression);
